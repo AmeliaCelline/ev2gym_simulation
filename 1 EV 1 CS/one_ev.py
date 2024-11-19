@@ -13,11 +13,11 @@ env = EV2Gym(config_file=config_file,
 
 # basically when grid needs help, EV will try to discharge until power balance is met
 # when grid does not need help, EV will try to charge as much as possible using the remaining power the grid has.
-# IN THIS SIMULATION, procured/setpoint power is the amount of power the grid has, so we want to make sure:
+# IN THIS SIMULATION, procured/setpoint power is the generated power from the grid, so we want to make sure:
 # power balance = setpoint power + power generated from PV - power consumed by load - power consumed by EV
 # Goal: power balance = 0
 
-# this simulator assume only 1 transformer and 1 port in charging station (so only 1 car can connect to charging st) so we can just use the total power of the transformer to determine the power balance
+# this simulation assume only 1 transformer and 1 port in charging station (so only 1 car can connect to charging st) so we can just use the total power of the transformer to determine the power balance
 
 # the transformer here act as the grid basically
 
