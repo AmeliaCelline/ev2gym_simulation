@@ -4,7 +4,7 @@
 # Simulation Parameters
 ##############################################################################
 timescale: 15 # in minutes per step
-simulation_length: 50 # in steps per simulation
+simulation_length: 50 #90 # in steps per simulation
 
 ##############################################################################
 # Date and Time
@@ -38,7 +38,7 @@ discharge_price_factor: 1 # how many times more abs(expensive/cheaper) it is to 
 ##############################################################################
 v2g_enabled: True # True or False
 
-number_of_charging_stations: 10
+number_of_charging_stations: 1
 number_of_transformers: 1
 number_of_ports_per_cs: 1
 # Provide path if you want to load a specific charging topology,
@@ -52,11 +52,6 @@ charging_network_topology: None #./config_files/charging_topology_10.json
 # The higher the number the easier it is to meet the power setpoints, the opposite for negative numbers
 power_setpoint_flexiblity: 10 # (in percentage +/- %)
 
-
-# since their definition of power setpoint is different from mine
-# I will need to have my own power setpoint multiplier in order for the power to be able to meet the load + EV
-my_setpoint_multiplier: 1
-
 ##############################################################################
 # Inflexible Loads, Solar Generation, and Demand Response
 ##############################################################################
@@ -65,14 +60,15 @@ tr_seed: -1 # seed for the random number generator of transformer loads(-1 for r
 
 inflexible_loads:
   include: True # True or False
-  inflexible_loads_capacity_multiplier_mean: 1 # 1 is default, the higher the number the more inflexible loads
+  # can sometimes have scale error because perhaps the multiplier is too small.
+  inflexible_loads_capacity_multiplier_mean: 0.1 # 1 is default, the higher the number the more inflexible loads
   forecast_mean: 10 # in percentage of load at time t%
   forecast_std: 10 # in percentage of load at time t%
 
 # PV solar Power
 solar_power:
   include: True # True or False
-  solar_power_capacity_multiplier_mean: 1 # 1 is default, the higher the number the more solar power
+  solar_power_capacity_multiplier_mean: 0.3 # 1 is default, the higher the number the more solar power
   forecast_mean: 100 # in percentage of load at time t%
   forecast_std: 5 # in percentage of load at time t%
 
@@ -119,13 +115,13 @@ charging_station:
 ev:
   battery_capacity: 50 # in kWh
   min_battery_capacity: 10 # in kWh
-  min_emergency_battery_capacity: 0
   desired_capacity: 30 # in kWh
   max_ac_charge_power: 22 # in kW
   min_ac_charge_power: 0 # in kW
   max_dc_charge_power: 50 # in kW
   max_discharge_power: -22 # in kW
   min_discharge_power: 0 # in kW
+  min_emergency_battery_capacity: 25 # in kWh
   ev_phases: 3
   transition_soc: 1 # 0-1 (0% - 100%)
   charge_efficiency: 1 # 0-1 (0% - 100%)
