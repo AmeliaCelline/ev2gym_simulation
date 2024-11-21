@@ -4,7 +4,7 @@
 # Simulation Parameters
 ##############################################################################
 timescale: 15 # in minutes per step
-simulation_length: 50 # in steps per simulation
+simulation_length: 90 # in steps per simulation
 
 ##############################################################################
 # Date and Time
@@ -26,7 +26,7 @@ simulation_days: weekdays # weekdays, weekends, or both
 
 # EV Spawn Behavior
 scenario: workplace # public, private, or workplace
-spawn_multiplier: 1 # 1 is default, the higher the number the more EVs spawn
+spawn_multiplier: 2 # 1 is default, the higher the number the more EVs spawn
 
 ##############################################################################
 # Prices
@@ -50,7 +50,7 @@ charging_network_topology: None #./config_files/charging_topology_10.json
 ##############################################################################
 # How much the power setpoints can vary in percentage compared to the nominal power
 # The higher the number the easier it is to meet the power setpoints, the opposite for negative numbers
-power_setpoint_flexiblity: 10 # (in percentage +/- %)
+power_setpoint_flexiblity: 10 # (in percentage +/- %) # We dont use this in this simulation
 
 ##############################################################################
 # Inflexible Loads, Solar Generation, and Demand Response
