@@ -63,13 +63,13 @@ class MySolution:
 
         if remaining_power > 0:
             
-            # however we want to calculate the maximum amount of power we can charge (because it can be limited by the charger)
+            # the no of EVs that has current capacity < desired capacity:
+            counter_prioritize = 0
+            # the no of EVs that has SOC < 100% and current capacity > desired capacity:
+            counter_non_prioritize = 0
 
-            counter = 0
-
-            # get the number of EVs that will be charged in this timestep
-
-            charge_EVs = []
+            non_prioritized_EVs = []
+            prioritized_EVs = []
             
             for cs in env.charging_stations:
                 if cs.evs_connected[0] is not None: # 0 because we assume only 1 port in charging station
@@ -77,22 +77,35 @@ class MySolution:
                     # store EV SOC for plotting
                     soc_evs[(cs.id,  cs.evs_connected[0].time_of_arrival)].append(cs.evs_connected[0].get_soc() * 100)
 
-                    # ev battery not yet full
-                    if cs.evs_connected[0].get_soc() < 1:
-                        charge_EVs.append(cs)
-                        counter+=1
-           
-            if counter != 0:
-                average_power = remaining_power / counter
-                # set the action
-                for cs in charge_EVs:
+                    if cs.evs_connected[0].current_capacity < cs.evs_connected[0].desired_capacity:
+                        counter_prioritize += 1
+                        prioritized_EVs.append(cs)
+                    else:
+                        # ev battery not yet full
+                        if cs.evs_connected[0].get_soc() < 1:
+                            non_prioritized_EVs.append(cs)
+                            counter_non_prioritize+=1
 
+            # charge prioritized EVs first
+            if counter_prioritize != 0:
+                average_power = remaining_power / counter_prioritize
+                # set the action
+                for cs in prioritized_EVs:
                     # note if average power > cs.get_max_power, it will actually charge with the max power of the charger
+                    action_list[cs.id] = average_power / cs.get_max_power()
+                    remaining_power -= min(average_power, cs.get_max_power())
+            
+            # if there is still enough power to charge the non-prioritized EVs after charging the prioritized EVs, then charge
+            if counter_non_prioritize != 0 and remaining_power > 0:
+                average_power = remaining_power / counter_non_prioritize
+                for cs in non_prioritized_EVs:
                     action_list[cs.id] = average_power / cs.get_max_power()
 
 
-        # if remaining power is negative, we need to discharge
+        # if remaining power is negative, EVs that have enough SOC will discharge, while EVs that has SOC lower than their desired SOC will charge with a power as low as possible (power just enough to reach the desired SOC until they depart)
+        # of course if EV's SOC is the same as their desired SOC, they will not charge/discharge, basically idle
         else:
+            # the no of EVs that will discharge
             counter = 0
             discharge_EVs = []
             # determine the number of EV that has higher battery than their desired capactiy
@@ -101,15 +114,24 @@ class MySolution:
                     # store EV SOC for plotting
                     soc_evs[(cs.id,  cs.evs_connected[0].time_of_arrival)].append(cs.evs_connected[0].get_soc() * 100)
 
+                    # count how many EVs will discharge
                     if cs.evs_connected[0].current_capacity > cs.evs_connected[0].desired_capacity:
                         discharge_EVs.append(cs)
                         counter += 1
+                    # EVs that has SOC lower than their desired SOC will charge with a power as low as possible (power just enough to reach the desired SOC until they depart)
+                    elif cs.evs_connected[0].current_capacity < cs.evs_connected[0].desired_capacity:
+                        time_left = cs.evs_connected[0].time_of_departure - env.current_step
+                        total_power_needed__in_timestep = (cs.evs_connected[0].desired_capacity - cs.evs_connected[0].current_capacity) * (60/env.timescale)
+                        power_needed_per_timestep = total_power_needed__in_timestep / time_left
+                        action_list[cs.id] = power_needed_per_timestep / cs.get_max_power()
+                      
 
             
             if counter != 0:
                 # the average power EV need to discharge
                 average_power = remaining_power / counter
 
+                # discharging
                 for cs in discharge_EVs:
 
                     # calculate the available power EV can discharge
