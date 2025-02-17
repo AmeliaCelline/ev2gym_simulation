@@ -1,0 +1,5 @@
+Objective Function:
+
+minimize
+a * sum of each ev (capactiy - desired capacity) ^ 2 + b * (power from EV discharging - power from EV charging - load + solar power) ^ 2
+
